@@ -1,0 +1,14 @@
+# Стадия сборки React
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY ticket-tracker-react/package.json ticket-tracker-react/package-lock.json ./
+RUN npm ci
+COPY ticket-tracker-react/ .
+RUN npm run build
+
+# Стадия продакшн-сервера nginx
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

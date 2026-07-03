@@ -1,16 +1,29 @@
-# This is a sample Python script.
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from app.database import init_db
+from app.api.v1.router import api_router
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
 
+app = FastAPI(title="Учебный трекер", lifespan=lifespan, redirect_slashes=False)
+# app = FastAPI(title="Учебный трекер", lifespan=lifespan)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Настройка CORS
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+app.include_router(api_router)

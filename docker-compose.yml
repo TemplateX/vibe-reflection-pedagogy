@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}               # берётся из .env
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+    # Volume для БД НЕ монтируем – база будет создаваться внутри контейнера и потеряется при пересоздании.
+    # Если нужна персистентность, раскомментируйте:
+    # volumes:
+    #   - ./data:/app
+    # но для теста это не требуется.
+    networks:
+      - tracker
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "80:80"               # фронтенд доступен на localhost:80
+    depends_on:
+      - backend
+    networks:
+      - tracker
+
+networks:
+  tracker:
